@@ -21,7 +21,6 @@ interface RecentTransactionsProps {
     limit?: number
 }
 
-// TODO: Accept props for real data
 export function RecentTransactions({ transactions = [], limit }: RecentTransactionsProps) {
     const displayTransactions = limit ? transactions.slice(0, limit) : transactions
 
