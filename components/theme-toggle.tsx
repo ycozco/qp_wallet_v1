@@ -6,7 +6,24 @@ import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 
 export function ThemeToggle({ className }: { className?: string }) {
+    const [mounted, setMounted] = React.useState(false)
     const { setTheme, theme } = useTheme()
+
+    // Avoid hydration mismatch by only rendering after mount
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    if (!mounted) {
+        return (
+            <div
+                className={cn(
+                    "relative flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800",
+                    className
+                )}
+            />
+        )
+    }
 
     return (
         <button
