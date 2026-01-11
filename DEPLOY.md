@@ -10,35 +10,256 @@
 
 ## Estructura de Archivos
 
+### Directorio de Deployment
+
+**Ubicación:** `/srv/apps/wallet/` (Stack Docker)
+
 ```
 /srv/apps/wallet/
-├── docker-compose.yml
-├── .env
+├── docker-compose.yml    # Orquestación de contenedores
+├── .env                  # Variables de entorno (credenciales)
 └── data/
-    ├── postgres/     # Datos de PostgreSQL
-    └── backups/      # Backups de BD
+    ├── postgres/         # Volumen persistente de PostgreSQL
+    │   ├── base/         # Datos de bases de datos
+    │   ├── global/       # Catálogos globales
+    │   ├── pg_wal/       # Write-Ahead Logs
+    │   └── ...           # Archivos internos de PostgreSQL
+    └── backups/          # Backups de BD (generados manualmente)
+        ├── backup-20260109-120000.sql
+        └── backup-20260110-020000.sql.gz
+```
 
+### Directorio del Código Fuente
+
+**Ubicación:** `/var/www/billetera/` (Código de la aplicación)
+
+```
 /var/www/billetera/
 ├── app/              # Páginas Next.js App Router
 ├── components/       # Componentes React
 ├── lib/              # Utilidades y acciones
+│   ├── actions/      # Server Actions de Prisma
+│   └── prisma.ts     # Cliente de Prisma
 ├── prisma/           # Schema de base de datos
-├── Dockerfile        # Imagen de producción
-└── ...
+│   ├── schema.prisma # Modelo de datos
+│   └── migrations/   # Migraciones de BD
+├── scripts/          # Scripts de utilidad (create-user)
+├── Dockerfile        # Imagen de producción multi-stage
+├── .dockerignore     # Archivos excluidos del build
+├── package.json      # Dependencias y scripts
+├── tsconfig.json     # Configuración TypeScript
+└── next.config.ts    # Configuración Next.js
 ```
+
+### Contenedores en Ejecución
+
+```
+CONTAINER ID   IMAGE              NAMES        PORTS                    STATUS
+xxxxxxxxxxxx   wallet-web:latest  wallet-web   0.0.0.0:3000->3000/tcp   Up X hours (healthy)
+xxxxxxxxxxxx   postgres:16-alpine wallet-db    5432/tcp (internal)      Up X hours (healthy)
+```
+
+## Configuración de Red Docker
+
+### Red Interna: wallet-network
+
+**Tipo:** Bridge (driver por defecto)
+**Subnet:** Asignado automáticamente por Docker (ej: 172.18.0.0/16)
+
+**Conectividad:**
+
+```
+┌────────────────────────────────────────────────────┐
+│  Internet                                          │
+└────────────────┬───────────────────────────────────┘
+                 │
+                 │ HTTPS (443)
+                 ▼
+┌────────────────────────────────────────────────────┐
+│  Nginx Proxy Manager (Host separado)              │
+│  billetera.qpsecuresolutions.cloud                 │
+│  → http://72.62.15.23:3000                         │
+└────────────────┬───────────────────────────────────┘
+                 │
+                 │ HTTP (3000)
+                 ▼
+┌────────────────────────────────────────────────────┐
+│  Host Server (72.62.15.23)                         │
+│  └─ 0.0.0.0:3000 → wallet-web:3000                 │
+└────────────────┬───────────────────────────────────┘
+                 │
+    ┌────────────┴──────────────┐
+    │  wallet-network (bridge)  │
+    │                            │
+    │  ┌──────────────────┐     │
+    │  │  wallet-web      │     │
+    │  │  172.18.0.3:3000 │     │
+    │  │  (exposed)       │     │
+    │  └────────┬─────────┘     │
+    │           │               │
+    │           │ TCP:5432      │
+    │           ▼               │
+    │  ┌──────────────────┐     │
+    │  │  wallet-db       │     │
+    │  │  172.18.0.2:5432 │     │
+    │  │  (internal only) │     │
+    │  └──────────────────┘     │
+    └───────────────────────────┘
+```
+
+**Resolución DNS Interna:**
+- `wallet-db` → IP del contenedor PostgreSQL (172.18.0.2)
+- `wallet-web` → IP del contenedor Next.js (172.18.0.3)
+- Usado en `DATABASE_URL=postgresql://wallet:pass@wallet-db:5432/wallet`
+
+**Puertos Expuestos:**
+- `wallet-web`: 3000 → Host 0.0.0.0:3000 (accesible externamente)
+- `wallet-db`: 5432 → Solo en wallet-network (NO expuesto al host)
+
+**Seguridad de Red:**
+- PostgreSQL NO es accesible desde fuera del host
+- Solo `wallet-web` puede conectarse a `wallet-db`
+- Tráfico externo pasa por Nginx Proxy Manager con SSL
 
 ## Variables de Entorno
 
 Archivo: `/srv/apps/wallet/.env`
 
 ```bash
+# PostgreSQL (usadas por wallet-db)
 POSTGRES_DB=wallet
 POSTGRES_USER=wallet
 POSTGRES_PASSWORD=<generado-aleatoriamente>
+
+# Prisma / Next.js (usadas por wallet-web)
 DATABASE_URL=postgresql://wallet:<password>@wallet-db:5432/wallet
+# Nota: usar wallet-db (no localhost) para DNS interno de Docker
+
+# NextAuth.js
 NEXTAUTH_SECRET=<generado-aleatoriamente>
+# Generar con: openssl rand -base64 32
 NEXTAUTH_URL=https://billetera.qpsecuresolutions.cloud
+
+# Node (inyectada automáticamente por docker-compose)
+NODE_ENV=production
 ```
+
+**Importante:**
+- Usar `wallet-db` como host (NO `localhost` ni `127.0.0.1`)
+- Si la contraseña tiene caracteres especiales, URL-encode en `DATABASE_URL`:
+  - `@` → `%40`
+  - `#` → `%23`
+  - `$` → `%24`
+  - etc.
+
+## Contenido y Estructura del Dockerfile
+
+**Ubicación:** `/var/www/billetera/Dockerfile`
+
+### Estrategia Multi-Stage Build
+
+El Dockerfile utiliza 4 etapas para optimizar el tamaño final de la imagen:
+
+#### Stage 1: base
+```dockerfile
+FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat openssl
+```
+- **Propósito:** Imagen base compartida
+- **Componentes:**
+  - Node.js 20 en Alpine Linux (~50MB)
+  - OpenSSL (requerido por Prisma Engine)
+  - libc6-compat (compatibilidad de bibliotecas)
+
+#### Stage 2: deps
+```dockerfile
+FROM base AS deps
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci
+```
+- **Propósito:** Instalar dependencias
+- **Estrategia:** `npm ci` (clean install) para reproducibilidad
+- **Output:** `node_modules/` completo (~300MB)
+
+#### Stage 3: builder
+```dockerfile
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npx prisma generate
+RUN npm run build
+```
+- **Propósito:** Compilar aplicación
+- **Pasos:**
+  1. Copiar dependencias de stage anterior
+  2. Copiar código fuente completo
+  3. Generar Prisma Client (`node_modules/.prisma/client`)
+  4. Compilar Next.js → `.next/` directory
+- **Output:**
+  - `.next/standalone` - Servidor optimizado
+  - `.next/static` - Assets estáticos
+  - `public/` - Archivos públicos
+
+#### Stage 4: runner (Imagen Final)
+```dockerfile
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/next.config.* ./
+
+RUN chown -R nextjs:nodejs /app
+USER nextjs
+
+EXPOSE 3000
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+CMD npx prisma migrate deploy && node_modules/.bin/next start
+```
+- **Propósito:** Imagen de producción optimizada
+- **Seguridad:**
+  - Usuario no-root (`nextjs:nodejs`)
+  - UID/GID fijos (1001)
+- **Archivos incluidos:**
+  - Solo build artifacts necesarios
+  - No incluye código fuente TypeScript
+  - No incluye devDependencies
+- **Comando de inicio:**
+  1. `prisma migrate deploy` - Aplicar migraciones pendientes
+  2. `next start` - Iniciar servidor en puerto 3000
+
+**Tamaño final de la imagen:** ~400-450MB
+
+### Archivos Excluidos (.dockerignore)
+
+```
+node_modules
+.next
+.git
+.env*
+npm-debug.log*
+.DS_Store
+coverage
+.vercel
+README.md
+```
+
+**Beneficios:**
+- Reduce tamaño del contexto de build
+- Excluye archivos sensibles (.env)
+- Acelera el proceso de build
 
 ## Comandos de Deployment
 
