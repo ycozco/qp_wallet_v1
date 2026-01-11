@@ -43,16 +43,6 @@ function SubmitButton() {
 
 export function CreateWalletDialog({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false)
-    const [state, formAction] = useActionState(createWallet, { message: '', errors: {} })
-
-    // Close dialog when wallet is successfully created
-    useEffect(() => {
-        if (state.success && open) {
-            // Use setTimeout to avoid synchronous setState in effect
-            const timer = setTimeout(() => setOpen(false), 100)
-            return () => clearTimeout(timer)
-        }
-    }, [state.success, open])
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -64,68 +54,85 @@ export function CreateWalletDialog({ children }: { children: React.ReactNode }) 
                         Crea una nueva cuenta para gestionar tus gastos e ingresos.
                     </DialogDescription>
                 </DialogHeader>
-                <form action={formAction} className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Nombre</Label>
-                        <Input id="name" name="name" placeholder="Ej. BCP Principal" required />
-                        {state.errors?.name && (
-                            <p className="text-sm text-red-500">{state.errors.name.join(', ')}</p>
-                        )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="type">Tipo</Label>
-                            <Select name="type" required defaultValue="bank">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Tipo" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="bank">Banco</SelectItem>
-                                    <SelectItem value="cash">Efectivo</SelectItem>
-                                    <SelectItem value="card">Tarjeta</SelectItem>
-                                    <SelectItem value="wallet">Virtual</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="currency">Moneda</Label>
-                            <Select name="currency" required defaultValue="PEN">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Moneda" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="PEN">Soles (S/)</SelectItem>
-                                    <SelectItem value="USD">Dólares ($)</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label htmlFor="openingBalance">Saldo Inicial</Label>
-                        <Input
-                            id="openingBalance"
-                            name="openingBalance"
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            required
-                        />
-                        {state.errors?.openingBalance && (
-                            <p className="text-sm text-red-500">{state.errors.openingBalance.join(', ')}</p>
-                        )}
-                    </div>
-
-                    {state.message && !state.success && (
-                        <p className="text-sm text-red-500">{state.message}</p>
-                    )}
-
-                    <DialogFooter>
-                        <SubmitButton />
-                    </DialogFooter>
-                </form>
+                <WalletForm onSuccess={() => setOpen(false)} />
             </DialogContent>
         </Dialog>
+    )
+}
+
+function WalletForm({ onSuccess }: { onSuccess: () => void }) {
+    const [state, formAction] = useActionState(createWallet, { message: '', errors: {} })
+
+    useEffect(() => {
+        if (state.success) {
+            const timer = setTimeout(() => {
+                onSuccess()
+            }, 100)
+            return () => clearTimeout(timer)
+        }
+    }, [state.success, onSuccess])
+
+    return (
+        <form action={formAction} className="grid gap-4 py-4">
+            <div className="grid gap-2">
+                <Label htmlFor="name">Nombre</Label>
+                <Input id="name" name="name" placeholder="Ej. BCP Principal" required />
+                {state.errors?.name && (
+                    <p className="text-sm text-red-500">{state.errors.name.join(', ')}</p>
+                )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="type">Tipo</Label>
+                    <Select name="type" required defaultValue="bank">
+                        <SelectTrigger>
+                            <SelectValue placeholder="Tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="bank">Banco</SelectItem>
+                            <SelectItem value="cash">Efectivo</SelectItem>
+                            <SelectItem value="card">Tarjeta</SelectItem>
+                            <SelectItem value="wallet">Virtual</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="currency">Moneda</Label>
+                    <Select name="currency" required defaultValue="PEN">
+                        <SelectTrigger>
+                            <SelectValue placeholder="Moneda" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="PEN">Soles (S/)</SelectItem>
+                            <SelectItem value="USD">Dólares ($)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            <div className="grid gap-2">
+                <Label htmlFor="openingBalance">Saldo Inicial</Label>
+                <Input
+                    id="openingBalance"
+                    name="openingBalance"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    required
+                />
+                {state.errors?.openingBalance && (
+                    <p className="text-sm text-red-500">{state.errors.openingBalance.join(', ')}</p>
+                )}
+            </div>
+
+            {state.message && !state.success && (
+                <p className="text-sm text-red-500">{state.message}</p>
+            )}
+
+            <DialogFooter>
+                <SubmitButton />
+            </DialogFooter>
+        </form>
     )
 }
