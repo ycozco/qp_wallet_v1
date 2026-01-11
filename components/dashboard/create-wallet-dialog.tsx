@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect, useActionState } from 'react'
-import { useFormStatus } from 'react-dom'
+import React, { useState, useEffect, useActionState, useFormStatus } from 'react'
 import { createWallet } from '@/lib/actions'
 import { Button } from '@/components/ui/button'
 import {

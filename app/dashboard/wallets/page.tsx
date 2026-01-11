@@ -1,3 +1,4 @@
+import React from 'react'
 import { CreateWalletDialog } from '@/components/dashboard/create-wallet-dialog'
 import { RecentTransactions } from '@/components/dashboard/recent-transactions'
 import { GlassCard } from '@/components/ui/glass-card'

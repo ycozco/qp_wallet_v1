@@ -1,3 +1,4 @@
+import React from 'react'
 import { getWalletDetails } from '@/lib/actions'
 import { WalletDateFilter } from '@/components/dashboard/wallet-date-filter'
 import { RecentTransactions } from '@/components/dashboard/recent-transactions'
@@ -19,10 +20,6 @@ export default async function WalletPage({ params, searchParams }: WalletPagePro
     const startDate = from ? new Date(from) : new Date(new Date().setDate(new Date().getDate() - 30))
     const endDate = to ? new Date(to) : new Date()
 
-    // Adjust end date to end of day? getWalletDetails uses lte, so if just "2023-01-01", it matches start of day.
-    // Ideally we handles this in logic or pass properly.
-    // For now assuming the standard YYYY-MM-DD input.
-    // Let's set endDate to end of day if it was provided as string
     if (to) {
         endDate.setHours(23, 59, 59, 999)
     }
@@ -35,15 +32,10 @@ export default async function WalletPage({ params, searchParams }: WalletPagePro
 
     // Chart Data Preparation (Simple Daily Grouping)
     const chartMap = new Map<string, number>()
-    // Initialize last 7 days or selected range?
-    // Let's just map based on transactions for now
 
     // Group transactions by day for chart
     wallet.transactions.forEach((tx) => {
         const dateKey = new Date(tx.date).toLocaleDateString('es-ES', { weekday: 'short' })
-        // This mapping is loose, ideally exact dates. 
-        // For "Resumen Semanal" usually it's Mon-Sun.
-        // Let's just create a list from the transactions
         if (tx.type === 'expense') {
             chartMap.set(dateKey, (chartMap.get(dateKey) || 0) + Number(tx.amount))
         }
@@ -105,7 +97,6 @@ export default async function WalletPage({ params, searchParams }: WalletPagePro
                     <OverviewChart data={chartData} title="Gastos del Periodo" subtitle="Desglose por día" />
                 </div>
                 <div className="lg:col-span-1">
-                    {/* Reuse RecentTransactions but with filtering props if needed, but we pass pre-filtered transactions */}
                     <RecentTransactions transactions={wallet.transactions} limit={10} />
                 </div>
             </div>
