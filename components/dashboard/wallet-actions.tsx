@@ -35,7 +35,10 @@ export function WalletActions({ walletId }: WalletActionsProps) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                <button
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <MoreHorizontal className="h-6 w-6" />
                 </button>
             </DropdownMenuTrigger>

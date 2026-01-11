@@ -46,7 +46,7 @@ export default async function WalletsPage() {
                                     <Wallet className="h-6 w-6 text-white" />
                                 </div>
                             </Link>
-                            <div className="relative z-20">
+                            <div className="relative z-50">
                                 <WalletActions walletId={wallet.id} />
                             </div>
                         </div>
