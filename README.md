@@ -1,36 +1,179 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Wallet App - Sistema de Gestión Financiera Personal
 
-## Getting Started
+Una aplicación web completa para gestionar finanzas personales construida con Next.js, Prisma y PostgreSQL.
 
-First, run the development server:
+## 🚀 Stack Tecnológico
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Frontend**: Next.js 16 con App Router, React 19, TailwindCSS
+- **Backend**: Next.js API Routes con Server Actions
+- **Base de Datos**: PostgreSQL 16
+- **ORM**: Prisma 5
+- **Autenticación**: NextAuth.js v5 (credenciales locales, preparado para Google)
+- **Deployment**: Docker Compose
+- **Proxy Inverso**: Nginx Proxy Manager con SSL Let's Encrypt
+
+## 📁 Estructura del Proyecto
+
+```
+wallet-app/
+├── app/                    # Next.js App Router
+│   ├── api/               # API Routes
+│   ├── dashboard/         # Páginas del dashboard
+│   └── login/             # Página de login
+├── components/            # Componentes React
+│   ├── dashboard/         # Componentes específicos del dashboard
+│   └── ui/                # Componentes UI reutilizables
+├── lib/                   # Utilidades y librerías
+│   ├── actions/           # Server Actions de Prisma
+│   └── prisma.ts          # Cliente de Prisma
+├── prisma/                # Schema y migraciones de base de datos
+│   ├── schema.prisma      # Modelo de datos
+│   └── migrations/        # Migraciones de BD
+├── scripts/               # Scripts de utilidad
+└── types/                 # Definiciones de tipos TypeScript
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🗄️ Modelo de Base de Datos
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Tablas Principales:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **users**: Usuarios del sistema
+- **auth_providers**: Proveedores de autenticación (local/google)
+- **accounts**: Cuentas financieras (banco, efectivo, tarjetas)
+- **categories**: Categorías de ingresos/gastos
+- **transactions**: Movimientos financieros (ingresos/gastos)
+- **transfers**: Transferencias entre cuentas
+- **tags**: Etiquetas para transacciones
+- **transaction_tags**: Relación N:M entre transacciones y etiquetas
 
-## Learn More
+## ✨ Características Implementadas
 
-To learn more about Next.js, take a look at the following resources:
+### Autenticación y Seguridad
+- ✅ Login con usuario/contraseña (bcrypt)
+- ✅ Sesiones seguras con NextAuth.js
+- ✅ Protección de rutas con middleware
+- 🔄 Preparado para autenticación con Google (schema listo, sin implementar)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Dashboard
+- ✅ KPIs del mes actual (ingresos, gastos, balance)
+- ✅ Contador de cuentas
+- ✅ Listado de movimientos recientes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Cuentas
+- ✅ Crear cuenta (efectivo, banco, tarjeta, billetera digital)
+- ✅ Listar cuentas
+- ✅ Eliminar cuenta
+- ✅ Soporte de múltiples monedas (PEN, USD, EUR)
 
-## Deploy on Vercel
+### Categorías
+- ✅ Crear categoría (gasto/ingreso/ambos)
+- ✅ Listar categorías
+- ✅ Eliminar categoría
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Movimientos
+- ✅ Listar transacciones con detalles
+- ✅ Filtrado por fecha (mes actual)
+- 🔄 Formulario de creación (estructura lista, sin UI completa)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Transferencias
+- ✅ Listar transferencias entre cuentas
+- 🔄 Formulario de creación (estructura lista, sin UI completa)
+
+### Perfil
+- ✅ Vista de información del usuario
+
+## 🌐 Acceso a la Aplicación
+
+- **URL**: https://billetera.qpsecuresolutions.cloud
+- **Usuario por Defecto**: admin
+- **Contraseña por Defecto**: admin123
+
+⚠️ **IMPORTANTE**: Cambiar la contraseña del usuario admin después del primer acceso.
+
+## 🛠️ Deployment
+
+El proyecto está desplegado usando Docker Compose con dos servicios:
+
+- `wallet-db`: PostgreSQL 16 (interno, no expuesto)
+- `wallet-web`: Next.js en producción (puerto 3000 en el host)
+
+### Comandos Útiles
+
+```bash
+# Ver logs
+docker logs -f wallet-web
+
+# Reiniciar servicios
+cd /srv/apps/wallet
+docker compose down
+docker compose --env-file .env up -d
+
+# Rebuild completo
+docker compose down
+docker compose --env-file .env up -d --build
+
+# Crear nuevo usuario
+docker exec -it wallet-web npx tsx scripts/create-user.ts username password
+
+# Backup de BD
+docker exec wallet-db pg_dump -U wallet wallet > backup.sql
+
+# Restore de BD
+docker exec -i wallet-db psql -U wallet wallet < backup.sql
+```
+
+## �� Variables de Entorno
+
+Archivo: `/srv/apps/wallet/.env`
+
+- `POSTGRES_DB`: Nombre de la base de datos
+- `POSTGRES_USER`: Usuario de PostgreSQL
+- `POSTGRES_PASSWORD`: Contraseña de PostgreSQL (generada aleatoriamente)
+- `DATABASE_URL`: URL de conexión completa (con caracteres especiales codificados)
+- `NEXTAUTH_SECRET`: Secret para NextAuth (generado aleatoriamente)
+- `NEXTAUTH_URL`: URL pública de la aplicación
+
+## 🔐 Seguridad
+
+- Contraseñas hasheadas con bcrypt (10 rounds)
+- Sesiones seguras con cookies httpOnly
+- SSL/TLS gestionado por Nginx Proxy Manager
+- Base de datos no expuesta públicamente
+- Variables de entorno con permisos 600
+
+## 📊 Estado del Proyecto
+
+### Completado (MVP Funcional)
+- ✅ Infraestructura Docker completa
+- ✅ Base de datos con schema completo
+- ✅ Autenticación local funcional
+- ✅ CRUD básico de cuentas y categorías
+- ✅ Listado de movimientos y transferencias
+- ✅ Dashboard con KPIs básicos
+- ✅ Deployment en producción
+
+### Pendiente (Mejoras Futuras)
+- ⏳ Formularios completos de transacciones y transferencias
+- ⏳ Gráficos avanzados (Recharts)
+- ⏳ Filtros y búsqueda avanzada
+- ⏳ Exportación a CSV/PDF
+- ⏳ Presupuestos y alertas
+- ⏳ Movimientos recurrentes
+- ⏳ Autenticación con Google OAuth
+
+## 📖 Documentación Adicional
+
+Ver [DEPLOY.md](./DEPLOY.md) para instrucciones detalladas de deployment, troubleshooting y mantenimiento.
+
+## 🤝 Contribuciones
+
+Este es un proyecto MVP funcional. Las mejoras futuras pueden incluir:
+- Completar formularios faltantes
+- Agregar más visualizaciones
+- Implementar autenticación con Google
+- Agregar tests unitarios e integración
+- Optimizar performance y caching
+
+## 📄 Licencia
+
+Proyecto privado para uso interno.
