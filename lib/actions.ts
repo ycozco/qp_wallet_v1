@@ -152,3 +152,22 @@ export async function getWalletDetails(walletId: string, startDate?: Date, endDa
         return null
     }
 }
+
+export async function deleteWallet(walletId: string) {
+    const session = await auth()
+    if (!session?.user?.id) return { success: false, message: 'No authenticated' }
+
+    try {
+        await prisma.account.delete({
+            where: {
+                id: walletId,
+                userId: session.user.id
+            }
+        })
+        revalidatePath('/dashboard/wallets')
+        return { success: true, message: 'Billetera eliminada' }
+    } catch (error) {
+        console.error('Failed to delete wallet:', error)
+        return { success: false, message: 'Error al eliminar billetera' }
+    }
+}

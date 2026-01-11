@@ -52,21 +52,7 @@ export default async function WalletsPage() {
                                 </div>
                             </Link>
                             <div className="relative z-20">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
-                                            <MoreHorizontal className="h-6 w-6" />
-                                        </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem className="cursor-pointer">
-                                            Editar
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 cursor-pointer">
-                                            Eliminar
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                <WalletActions walletId={wallet.id} />
                             </div>
                         </div>
 

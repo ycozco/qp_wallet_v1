@@ -1,3 +1,4 @@
+import React from 'react'
 import { getTransactions } from '@/lib/actions/transactions'
 import Link from 'next/link'
 import { PlusIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/outline'
@@ -45,17 +46,16 @@ export default async function TransactionsPage() {
       ) : (
         <div className="space-y-3">
           {transactions.map((transaction) => (
-            <div 
+            <div
               key={transaction.id}
               className="rounded-2xl bg-slate-900 border-2 border-slate-800 p-6 hover:border-slate-700 transition-all duration-200 shadow-lg"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-4 flex-1">
-                  <div className={`p-3 rounded-xl ${
-                    transaction.type === 'income' 
-                      ? 'bg-green-500/10 border border-green-500/30' 
+                  <div className={`p-3 rounded-xl ${transaction.type === 'income'
+                      ? 'bg-green-500/10 border border-green-500/30'
                       : 'bg-red-500/10 border border-red-500/30'
-                  }`}>
+                    }`}>
                     {transaction.type === 'income' ? (
                       <ArrowTrendingUpIcon className="h-6 w-6 text-green-400" />
                     ) : (
@@ -82,9 +82,8 @@ export default async function TransactionsPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`text-2xl font-bold ${
-                    transaction.type === 'income' ? 'text-green-400' : 'text-red-400'
-                  }`}>
+                  <p className={`text-2xl font-bold ${transaction.type === 'income' ? 'text-green-400' : 'text-red-400'
+                    }`}>
                     {transaction.type === 'income' ? '+' : '-'} S/ {Number(transaction.amount).toFixed(2)}
                   </p>
                 </div>
