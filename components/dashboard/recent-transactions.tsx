@@ -1,5 +1,7 @@
 'use client'
 
+import React from 'react'
+
 import { GlassCard } from '@/components/ui/glass-card'
 import { ArrowUpRight, ArrowDownLeft, Receipt } from 'lucide-react'
 import Link from 'next/link'
