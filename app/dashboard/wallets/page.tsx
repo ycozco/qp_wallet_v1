@@ -43,17 +43,14 @@ export default async function WalletsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {wallets.map((wallet, index) => (
-                    <GlassCard key={wallet.id} delay={index * 0.1} className="group relative h-full">
-                        {/* Clickable Card Link */}
-                        <Link href={`/dashboard/wallets/${wallet.id}`} className="absolute inset-0 z-10" />
-
-                        <div className={`absolute inset-0 bg-gradient-to-br ${getWalletColor(index)} opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none`} />
-
-                        <div className="flex justify-between items-start mb-8 relative z-20 pointer-events-none">
-                            <div className={`p-3 rounded-xl bg-gradient-to-br ${getWalletColor(index)} shadow-lg`}>
-                                <Wallet className="h-6 w-6 text-white" />
-                            </div>
-                            <div className="pointer-events-auto">
+                    <GlassCard key={wallet.id} delay={index * 0.1} className="flex flex-col justify-between h-full">
+                        <div className="flex justify-between items-start mb-4">
+                            <Link href={`/dashboard/wallets/${wallet.id}`}>
+                                <div className={`p-3 rounded-xl bg-gradient-to-br ${getWalletColor(index)} shadow-lg cursor-pointer hover:scale-105 transition-transform`}>
+                                    <Wallet className="h-6 w-6 text-white" />
+                                </div>
+                            </Link>
+                            <div className="relative z-20">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
@@ -61,10 +58,10 @@ export default async function WalletsPage() {
                                         </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
-                                        <DropdownMenuItem>
+                                        <DropdownMenuItem className="cursor-pointer">
                                             Editar
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400">
+                                        <DropdownMenuItem className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 cursor-pointer">
                                             Eliminar
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
@@ -72,19 +69,21 @@ export default async function WalletsPage() {
                             </div>
                         </div>
 
-                        <div className="relative z-10 pointer-events-none">
-                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase">{wallet.type}</p>
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-white mt-1">{wallet.name}</h3>
-                        </div>
-
-                        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 relative z-10 pointer-events-none">
-                            <div className="flex justify-between items-baseline">
-                                <span className="text-sm text-slate-500 dark:text-slate-400">Saldo disponible</span>
-                                <span className="text-2xl font-bold text-slate-900 dark:text-white">
-                                    {wallet.currency === 'PEN' ? 'S/' : '$'} {Number(wallet.openingBalance).toFixed(2)}
-                                </span>
+                        <Link href={`/dashboard/wallets/${wallet.id}`} className="block group flex-grow">
+                            <div>
+                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase">{wallet.type}</p>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mt-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{wallet.name}</h3>
                             </div>
-                        </div>
+
+                            <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-sm text-slate-500 dark:text-slate-400">Saldo disponible</span>
+                                    <span className="text-2xl font-bold text-slate-900 dark:text-white">
+                                        {wallet.currency === 'PEN' ? 'S/' : '$'} {Number(wallet.openingBalance).toFixed(2)}
+                                    </span>
+                                </div>
+                            </div>
+                        </Link>
                     </GlassCard>
                 ))}
 
