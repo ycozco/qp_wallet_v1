@@ -11,25 +11,31 @@ import {
 } from 'recharts'
 import { GlassCard } from '@/components/ui/glass-card'
 
-const data = [
-    { name: 'Lun', total: 120 },
-    { name: 'Mar', total: 300 },
-    { name: 'Mie', total: 240 },
-    { name: 'Jue', total: 450 },
-    { name: 'Vie', total: 180 },
-    { name: 'Sab', total: 600 },
-    { name: 'Dom', total: 350 },
-]
+interface OverviewChartProps {
+    data?: { name: string; total: number }[]
+    title?: string
+    subtitle?: string
+}
 
-export function OverviewChart() {
+export function OverviewChart({ data = [], title = "Resumen Semanal", subtitle = "Actividad de transacciones" }: OverviewChartProps) {
+    const chartData = data.length > 0 ? data : [
+        { name: 'Lun', total: 0 },
+        { name: 'Mar', total: 0 },
+        { name: 'Mie', total: 0 },
+        { name: 'Jue', total: 0 },
+        { name: 'Vie', total: 0 },
+        { name: 'Sab', total: 0 },
+        { name: 'Dom', total: 0 },
+    ]
+
     return (
         <GlassCard className="col-span-4 pl-0 pr-0 md:col-span-3 lg:h-[400px]">
             <div className="px-6 mb-4">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Resumen Semanal</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Actividad de transacciones</p>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
             </div>
             <ResponsiveContainer width="100%" height={320}>
-                <BarChart data={data}>
+                <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.3} vertical={false} />
                     <XAxis
                         dataKey="name"
