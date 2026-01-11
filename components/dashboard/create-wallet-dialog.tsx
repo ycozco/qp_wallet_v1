@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useFormState, useFormStatus } from 'react-dom'
+import { useState, useEffect, useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { createWallet } from '@/lib/actions'
 import { Button } from '@/components/ui/button'
 import {
@@ -43,7 +43,7 @@ function SubmitButton() {
 
 export function CreateWalletDialog({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false)
-    const [state, formAction] = useFormState(createWallet, { message: null, errors: {} })
+    const [state, formAction] = useActionState(createWallet, { message: null, errors: {} })
 
     useEffect(() => {
         if (state.success) {
