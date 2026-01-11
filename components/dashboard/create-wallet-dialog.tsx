@@ -43,14 +43,16 @@ function SubmitButton() {
 
 export function CreateWalletDialog({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = useState(false)
-    const [state, formAction] = useActionState(createWallet, { message: null, errors: {} })
+    const [state, formAction] = useActionState(createWallet, { message: '', errors: {} })
 
+    // Close dialog when wallet is successfully created
     useEffect(() => {
-        if (state.success) {
-            setOpen(false)
-            // Reset state? useFormState doesn't verify reset easily, but closing dialog is enough
+        if (state.success && open) {
+            // Use setTimeout to avoid synchronous setState in effect
+            const timer = setTimeout(() => setOpen(false), 100)
+            return () => clearTimeout(timer)
         }
-    }, [state.success])
+    }, [state.success, open])
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>

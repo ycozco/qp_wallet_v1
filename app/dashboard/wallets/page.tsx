@@ -1,16 +1,11 @@
 import React from 'react'
 import { CreateWalletDialog } from '@/components/dashboard/create-wallet-dialog'
+import { WalletActions } from '@/components/dashboard/wallet-actions'
 import { RecentTransactions } from '@/components/dashboard/recent-transactions'
 import { GlassCard } from '@/components/ui/glass-card'
 import { getWallets } from '@/lib/actions'
-import { Plus, Wallet, MoreHorizontal } from 'lucide-react'
+import { Plus, Wallet } from 'lucide-react'
 import Link from 'next/link'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 
 const WALLET_COLORS = [
     'from-indigo-500 to-purple-500',
