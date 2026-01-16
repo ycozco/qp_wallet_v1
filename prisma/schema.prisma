@@ -69,6 +69,7 @@ model Category {
   userId    String   @map("user_id")
   name      String
   kind      String   // 'expense' | 'income' | 'both'
+  icon      String?  // Emoji icon for the category
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

@@ -96,8 +96,7 @@ export default async function DashboardPage() {
         {stats.map((stat, i) => (
           <GlassCard
             key={stat.name}
-            delay={i * 0.1}
-            className="group"
+            className="group p-6"
           >
             <div className="flex items-center justify-between mb-4">
               <div className={`rounded-xl p-2 bg-${stat.color}-100 dark:bg-${stat.color}-900/20 text-${stat.color}-600 dark:text-${stat.color}-400 transition-colors group-hover:scale-110 duration-200`}>

@@ -4,6 +4,7 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { validateSufficientFunds } from './balances'
 
 const TransactionSchema = z.object({
   accountId: z.string().min(1),
@@ -31,6 +32,18 @@ export async function createTransaction(formData: FormData) {
     return { error: 'Datos inválidos' }
   }
 
+  // Validar fondos suficientes para gastos
+  if (validatedFields.data.type === 'expense') {
+    const fundsCheck = await validateSufficientFunds(
+      validatedFields.data.accountId,
+      validatedFields.data.amount
+    )
+
+    if (!fundsCheck.valid) {
+      return { error: fundsCheck.message || 'Fondos insuficientes' }
+    }
+  }
+
   try {
     const { categoryId, date, ...rest } = validatedFields.data
     await prisma.transaction.create({
@@ -43,6 +56,7 @@ export async function createTransaction(formData: FormData) {
     })
 
     revalidatePath('/dashboard/transactions')
+    revalidatePath('/dashboard')
     return { success: true }
   } catch (error) {
     return { error: 'Error al crear la transacción' }

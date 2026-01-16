@@ -7,7 +7,6 @@ import {
   Wallet,
   PieChart,
   ArrowRightLeft,
-  Settings,
   LogOut
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -60,19 +59,12 @@ export function Sidebar() {
         </nav>
       </div>
 
-      <div className="border-t border-slate-200 p-4 dark:border-slate-800">
-        <Link
-          href="/settings"
-          className="group flex w-full items-center rounded-xl px-3 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-all duration-200"
-        >
-          <Settings className="mr-3 h-5 w-5 text-slate-400 group-hover:text-slate-500 dark:text-slate-500 dark:group-hover:text-slate-300" />
-          Configuración
-        </Link>
+      <div className="border-t border-slate-800 p-4">
         <button
           // TODO: Implement logout action
-          className="mt-1 group flex w-full items-center rounded-xl px-3 py-3 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-all duration-200"
+          className="group flex w-full items-center rounded-xl px-3 py-3 text-sm font-medium text-slate-400 hover:bg-red-900/20 hover:text-red-400 transition-all duration-200"
         >
-          <LogOut className="mr-3 h-5 w-5 text-slate-400 group-hover:text-red-600 dark:text-slate-500 dark:group-hover:text-red-400" />
+          <LogOut className="mr-3 h-5 w-5 text-slate-500 group-hover:text-red-400" />
           Cerrar Sesión
         </button>
       </div>

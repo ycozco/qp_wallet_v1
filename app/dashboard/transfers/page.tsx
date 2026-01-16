@@ -1,8 +1,7 @@
 import { getTransfers } from '@/lib/actions/transfers'
+import TransfersList from './TransfersList'
 import Link from 'next/link'
 import { PlusIcon, ArrowsRightLeftIcon } from '@heroicons/react/24/outline'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 
 export default async function TransfersPage() {
   const transfers = await getTransfers()
@@ -43,44 +42,7 @@ export default async function TransfersPage() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-3">
-          {transfers.map((transfer) => (
-            <div 
-              key={transfer.id}
-              className="rounded-2xl bg-slate-900 border-2 border-slate-800 p-6 hover:border-slate-700 transition-all duration-200 shadow-lg"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30">
-                    <ArrowsRightLeftIcon className="h-6 w-6 text-indigo-400" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-lg font-bold text-white">
-                        {transfer.fromAccount.name}
-                      </span>
-                      <span className="text-slate-500">→</span>
-                      <span className="text-lg font-bold text-white">
-                        {transfer.toAccount.name}
-                      </span>
-                    </div>
-                    <p className="text-sm text-slate-400 mb-2">
-                      {transfer.description || 'Sin descripción'}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {format(new Date(transfer.date), "d 'de' MMMM, yyyy", { locale: es })}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-blue-400">
-                    S/ {Number(transfer.amount).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <TransfersList transfers={transfers} />
       )}
     </div>
   )

@@ -1,10 +1,10 @@
-import { getAccounts } from '@/lib/actions/accounts'
+import { getAllAccountBalances } from '@/lib/actions/balances'
 import Link from 'next/link'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import AccountsList from './AccountsList'
 
 export default async function AccountsPage() {
-  const accounts = await getAccounts()
+  const accounts = await getAllAccountBalances()
 
   return (
     <div className="space-y-8">
@@ -47,3 +47,4 @@ export default async function AccountsPage() {
     </div>
   )
 }
+

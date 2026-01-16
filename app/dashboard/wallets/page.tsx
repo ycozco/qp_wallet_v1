@@ -1,88 +1,131 @@
 import React from 'react'
 import { CreateWalletDialog } from '@/components/dashboard/create-wallet-dialog'
-import { WalletActions } from '@/components/dashboard/wallet-actions'
+import { WalletCard } from '@/components/dashboard/wallet-card'
 import { RecentTransactions } from '@/components/dashboard/recent-transactions'
-import { GlassCard } from '@/components/ui/glass-card'
 import { getWallets } from '@/lib/actions'
-import { Plus, Wallet } from 'lucide-react'
+import { Plus, Wallet, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 import Link from 'next/link'
 
-const WALLET_COLORS = [
-    'from-indigo-500 to-purple-500',
-    'from-emerald-500 to-teal-500',
-    'from-orange-500 to-amber-500',
-    'from-blue-500 to-cyan-500',
-    'from-rose-500 to-pink-500',
-]
-
-function getWalletColor(index: number) {
-    return WALLET_COLORS[index % WALLET_COLORS.length]
-}
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function WalletsPage() {
     const wallets = await getWallets()
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
+        <div className="space-y-8">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Mis Billeteras</h1>
-                    <p className="text-slate-500 dark:text-slate-400">Gestiona tus cuentas y tarjetas</p>
+                    <h1 className="text-4xl font-bold text-slate-900 dark:text-white">Mis Billeteras</h1>
+                    <p className="text-slate-600 dark:text-slate-400 mt-1">
+                        Administra tus cuentas y monitorea tus finanzas
+                    </p>
                 </div>
                 <CreateWalletDialog>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors shadow-lg shadow-indigo-500/20">
+                    <button 
+                        type="button"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all duration-300"
+                    >
                         <Plus className="h-5 w-5" />
-                        <span>Nueva Billetera</span>
+                        <span>Nueva Cuenta</span>
                     </button>
                 </CreateWalletDialog>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {wallets.map((wallet, index) => (
-                    <GlassCard key={wallet.id} delay={index * 0.1} className="flex flex-col justify-between h-full">
-                        <div className="flex justify-between items-start mb-4">
-                            <Link href={`/dashboard/wallets/${wallet.id}`}>
-                                <div className={`p-3 rounded-xl bg-gradient-to-br ${getWalletColor(index)} shadow-lg cursor-pointer hover:scale-105 transition-transform`}>
-                                    <Wallet className="h-6 w-6 text-white" />
-                                </div>
-                            </Link>
-                            <div className="relative z-50">
-                                <WalletActions walletId={wallet.id} />
-                            </div>
-                        </div>
-
-                        <Link href={`/dashboard/wallets/${wallet.id}`} className="block group flex-grow">
+            {/* Stats Summary */}
+            {wallets.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="p-6 rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-lg">
+                        <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase">{wallet.type}</p>
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mt-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{wallet.name}</h3>
+                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Cuentas</p>
+                                <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{wallets.length}</p>
                             </div>
-
-                            <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
-                                <div className="flex justify-between items-baseline">
-                                    <span className="text-sm text-slate-500 dark:text-slate-400">Saldo disponible</span>
-                                    <span className="text-2xl font-bold text-slate-900 dark:text-white">
-                                        {wallet.currency === 'PEN' ? 'S/' : '$'} {Number(wallet.openingBalance).toFixed(2)}
-                                    </span>
-                                </div>
+                            <div className="p-3 rounded-xl bg-indigo-100 dark:bg-indigo-900/30">
+                                <Wallet className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
                             </div>
-                        </Link>
-                    </GlassCard>
-                ))}
-
-                <CreateWalletDialog>
-                    <button className="w-full group relative flex h-full min-h-[240px] flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/50 hover:bg-slate-100 hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-900/20 dark:hover:bg-slate-900/50 dark:hover:border-indigo-500 transition-all duration-300">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-200 group-hover:bg-indigo-100 dark:bg-slate-800 dark:group-hover:bg-indigo-900/30 transition-colors">
-                            <Plus className="h-8 w-8 text-slate-400 group-hover:text-indigo-600 dark:text-slate-500 dark:group-hover:text-indigo-400" />
                         </div>
-                        <p className="text-base font-medium text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                            Agregar Nueva Cuenta
-                        </p>
-                    </button>
-                </CreateWalletDialog>
+                    </div>
+
+                    <div className="p-6 rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-lg">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Saldo Total (PEN)</p>
+                                <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                                    S/ {wallets.filter(w => w.currency === 'PEN').reduce((sum, w) => sum + Number(w.openingBalance), 0).toFixed(2)}
+                                </p>
+                            </div>
+                            <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
+                                <ArrowUpRight className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-6 rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-lg">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Saldo Total (USD)</p>
+                                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-1">
+                                    $ {wallets.filter(w => w.currency === 'USD').reduce((sum, w) => sum + Number(w.openingBalance), 0).toFixed(2)}
+                                </p>
+                            </div>
+                            <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/30">
+                                <ArrowDownLeft className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Wallets Grid */}
+            <div>
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Todas las Cuentas</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {wallets.map((wallet, index) => (
+                        <WalletCard 
+                            key={wallet.id} 
+                            wallet={{
+                                ...wallet,
+                                openingBalance: Number(wallet.openingBalance)
+                            }} 
+                            index={index} 
+                        />
+                    ))}
+
+                    {/* Add New Wallet Card */}
+                    <CreateWalletDialog>
+                        <button 
+                            type="button"
+                            className="w-full group flex h-full min-h-[360px] flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/50 hover:bg-indigo-50 hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-900/20 dark:hover:bg-indigo-900/20 dark:hover:border-indigo-500 transition-all duration-300"
+                        >
+                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 group-hover:scale-110 transition-transform shadow-lg">
+                                <Plus className="h-8 w-8 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <p className="text-lg font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                    Agregar Nueva Cuenta
+                                </p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                    Crea una nueva billetera
+                                </p>
+                            </div>
+                        </button>
+                    </CreateWalletDialog>
+                </div>
             </div>
 
-            <div className="mt-12">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Actividad Reciente</h2>
+            {/* Recent Transactions Section */}
+            <div>
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Actividad Reciente</h2>
+                    <Link 
+                        href="/dashboard/transactions"
+                        className="text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                    >
+                        Ver todas →
+                    </Link>
+                </div>
                 <RecentTransactions />
             </div>
         </div>

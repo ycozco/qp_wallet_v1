@@ -33,27 +33,38 @@ export function WalletActions({ walletId }: WalletActionsProps) {
     }
 
     return (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
                 <button
-                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                    type="button"
+                    className="p-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-colors"
+                    aria-label="Acciones de billetera"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <MoreHorizontal className="h-6 w-6" />
+                    <MoreHorizontal className="h-4 w-4 text-white" />
                 </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuItem className="cursor-pointer" onClick={() => alert('Edición próximamente')}>
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuItem 
+                    className="cursor-pointer" 
+                    onSelect={(e) => {
+                        e.preventDefault()
+                        alert('Función de edición próximamente')
+                    }}
+                >
                     <Pencil className="mr-2 h-4 w-4" />
                     Editar
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 cursor-pointer"
-                    onClick={handleDelete}
+                    onSelect={(e) => {
+                        e.preventDefault()
+                        handleDelete()
+                    }}
                     disabled={isPending}
                 >
                     <Trash className="mr-2 h-4 w-4" />
-                    Eliminar
+                    {isPending ? 'Eliminando...' : 'Eliminar'}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

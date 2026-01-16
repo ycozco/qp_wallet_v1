@@ -102,6 +102,9 @@ export async function getWalletDetails(walletId: string, startDate?: Date, endDa
                             lte: endDate
                         }
                     },
+                    include: {
+                        category: true
+                    },
                     orderBy: { date: 'desc' }
                 }
             }
@@ -109,9 +112,10 @@ export async function getWalletDetails(walletId: string, startDate?: Date, endDa
 
         if (!wallet) return null
 
-        // Calculate totals
+        // Calculate totals and category breakdown
         let totalIncome = 0
         let totalExpense = 0
+        const categoryTotals = new Map<string, { name: string, total: number, icon: string | null }>()
 
         wallet.transactions.forEach(tx => {
             const amount = Number(tx.amount)
@@ -119,24 +123,48 @@ export async function getWalletDetails(walletId: string, startDate?: Date, endDa
                 totalIncome += amount
             } else {
                 totalExpense += amount
+                // Group expenses by category
+                if (tx.category) {
+                    const existing = categoryTotals.get(tx.category.id)
+                    if (existing) {
+                        existing.total += amount
+                    } else {
+                        categoryTotals.set(tx.category.id, {
+                            name: tx.category.name,
+                            total: amount,
+                            icon: tx.category.icon
+                        })
+                    }
+                } else {
+                    // Sin categoría
+                    const existing = categoryTotals.get('uncategorized')
+                    if (existing) {
+                        existing.total += amount
+                    } else {
+                        categoryTotals.set('uncategorized', {
+                            name: 'Sin categoría',
+                            total: amount,
+                            icon: '📦'
+                        })
+                    }
+                }
             }
         })
 
         // Prepare chart data (daily)
         const dailyData = wallet.transactions.reduce((acc, tx) => {
-            const dateStr = tx.date.toLocaleDateString('es-ES', { weekday: 'short' }) // Simplification
-            // Ideally use proper date grouping
-            // For now, let's just mock or group simply.
-            // A better approach for charts is grouping by day.
+            const dateStr = tx.date.toLocaleDateString('es-ES', { weekday: 'short' })
             return acc
         }, {} as Record<string, number>)
 
-        // Let's return transactions and summary for now.
         // Serializing Decimal to number for Client Components
         const transactions = wallet.transactions.map(tx => ({
             ...tx,
             amount: Number(tx.amount),
         }))
+
+        // Convert category map to array for pie chart
+        const expensesByCategory = Array.from(categoryTotals.values())
 
         return {
             ...wallet,
@@ -145,7 +173,8 @@ export async function getWalletDetails(walletId: string, startDate?: Date, endDa
             summary: {
                 income: totalIncome,
                 expense: totalExpense
-            }
+            },
+            expensesByCategory
         }
     } catch (error) {
         console.error('Failed to fetch wallet details:', error)

@@ -1,11 +1,19 @@
 'use client'
 
-import { Account } from '@prisma/client'
 import { TrashIcon } from '@heroicons/react/24/outline'
 import { deleteAccount } from '@/lib/actions/accounts'
 import { useState } from 'react'
 
-export default function AccountsList({ accounts }: { accounts: Account[] }) {
+type AccountWithBalance = {
+  id: string
+  name: string
+  type: string
+  currency: string
+  openingBalance: number
+  currentBalance: number
+}
+
+export default function AccountsList({ accounts }: { accounts: AccountWithBalance[] }) {
   const [deleting, setDeleting] = useState<string | null>(null)
 
   const handleDelete = async (id: string) => {
@@ -49,11 +57,21 @@ export default function AccountsList({ accounts }: { accounts: Account[] }) {
             {account.name}
           </h3>
           
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm text-slate-400">Balance inicial:</span>
-            <span className="text-2xl font-bold text-white">
-              {account.currency} {Number(account.openingBalance).toFixed(2)}
-            </span>
+          <div className="space-y-2">
+            <div className="flex items-baseline justify-between">
+              <span className="text-sm text-slate-400">Balance inicial:</span>
+              <span className="text-sm font-semibold text-slate-300">
+                {account.currency} {account.openingBalance.toFixed(2)}
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between pt-2 border-t border-slate-700">
+              <span className="text-sm text-slate-400">Balance actual:</span>
+              <span className={`text-2xl font-bold ${
+                account.currentBalance >= 0 ? 'text-green-400' : 'text-red-400'
+              }`}>
+                {account.currency} {account.currentBalance.toFixed(2)}
+              </span>
+            </div>
           </div>
         </div>
       ))}

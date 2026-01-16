@@ -4,6 +4,7 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { validateSufficientFunds } from './balances'
 
 const TransferSchema = z.object({
   fromAccountId: z.string().min(1),
@@ -33,6 +34,16 @@ export async function createTransfer(formData: FormData) {
     return { error: 'Las cuentas deben ser diferentes' }
   }
 
+  // Validar fondos suficientes en cuenta origen
+  const fundsCheck = await validateSufficientFunds(
+    validatedFields.data.fromAccountId,
+    validatedFields.data.amount
+  )
+
+  if (!fundsCheck.valid) {
+    return { error: fundsCheck.message || 'Fondos insuficientes en cuenta origen' }
+  }
+
   try {
     const { date, ...rest } = validatedFields.data
     await prisma.transfer.create({
@@ -44,6 +55,7 @@ export async function createTransfer(formData: FormData) {
     })
 
     revalidatePath('/dashboard/transfers')
+    revalidatePath('/dashboard')
     return { success: true }
   } catch (error) {
     return { error: 'Error al crear la transferencia' }

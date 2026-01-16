@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 
 export function ThemeToggle({ className }: { className?: string }) {
     const [mounted, setMounted] = React.useState(false)
-    const { setTheme, theme } = useTheme()
+    const { setTheme, resolvedTheme } = useTheme()
 
     // Avoid hydration mismatch by only rendering after mount
     React.useEffect(() => {
@@ -27,7 +27,10 @@ export function ThemeToggle({ className }: { className?: string }) {
 
     return (
         <button
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            type="button"
+            onClick={() => {
+                setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+            }}
             className={cn(
                 "relative flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 transition-colors hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500",
                 className

@@ -8,6 +8,49 @@
 - **Stack**: /srv/apps/wallet/
 - **Código**: /var/www/billetera/
 
+## Arquitectura de Deployment
+
+### Principio: Todo se sirve desde contenedores Docker
+
+**NO SE DEBE:**
+- ❌ Ejecutar `npm run dev` en el servidor
+- ❌ Ejecutar `npm run build` en el servidor
+- ❌ Ejecutar `node server.js` directamente
+- ❌ Usar PM2 o cualquier gestor de procesos
+- ❌ Exponer Node.js directamente al público
+
+**SE DEBE:**
+- ✅ Todo corre dentro de contenedores Docker
+- ✅ Build se hace dentro del contenedor
+- ✅ PostgreSQL en contenedor separado
+- ✅ Nginx Proxy Manager maneja SSL y proxy
+- ✅ Usar scripts automatizados de deployment
+
+### Flujo de Deployment
+
+```
+Código en /var/www/billetera
+         ↓
+Docker Build (multi-stage)
+         ↓
+Imagen: wallet-wallet-web:latest
+         ↓
+Contenedor: wallet-web (puerto 3000)
+         ↓
+Nginx Proxy Manager (SSL)
+         ↓
+Internet: billetera.qpsecuresolutions.cloud
+```
+
+### Scripts de Deployment
+
+| Script | Propósito | Rebuild | Downtime |
+|--------|-----------|---------|----------|
+| `deploy.sh` | Deployment completo | ✅ Sí | ~2-3 min |
+| `update.sh` | Actualización rápida | ❌ No | ~5 seg |
+| `start.sh` | Iniciar servicios | ❌ No | N/A |
+| `stop.sh` | Detener servicios | ❌ No | N/A |
+
 ## Estructura de Archivos
 
 ### Directorio de Deployment
@@ -263,14 +306,71 @@ README.md
 
 ## Comandos de Deployment
 
-### 1. Levantar Stack (primera vez)
+### Scripts Automatizados (Recomendado)
+
+#### 1. Deployment Completo (Con Rebuild)
+
+```bash
+cd /srv/apps/wallet
+./deploy.sh
+```
+
+Este script ejecuta:
+- Actualiza código fuente (git pull)
+- Construye imagen Docker desde cero
+- Detiene contenedores actuales
+- Inicia nuevos contenedores
+- Ejecuta migraciones de Prisma automáticamente
+- Verifica health de la aplicación
+- Muestra logs y estado final
+
+**Usar cuando:**
+- Primera instalación
+- Cambios en dependencias (package.json)
+- Cambios en Dockerfile
+- Actualizaciones mayores
+
+#### 2. Actualización Rápida (Sin Rebuild)
+
+```bash
+cd /srv/apps/wallet
+./update.sh
+```
+
+Este script ejecuta:
+- Actualiza código fuente (git pull)
+- Reinicia contenedor sin rebuild
+- Verifica health
+
+**Usar cuando:**
+- Cambios menores en código
+- Actualizaciones de UI/lógica
+- No hay cambios en dependencias
+
+#### 3. Iniciar Servicios
+
+```bash
+cd /srv/apps/wallet
+./start.sh
+```
+
+#### 4. Detener Servicios
+
+```bash
+cd /srv/apps/wallet
+./stop.sh
+```
+
+### Comandos Manuales de Docker
+
+#### 1. Levantar Stack (primera vez)
 
 ```bash
 cd /srv/apps/wallet
 docker compose --env-file .env up -d --build
 ```
 
-### 2. Ver Logs
+#### 2. Ver Logs
 
 ```bash
 # Todos los servicios
@@ -283,7 +383,7 @@ docker logs -f wallet-web
 docker logs -f wallet-db
 ```
 
-### 3. Rebuild después de cambios
+#### 3. Rebuild después de cambios
 
 ```bash
 cd /var/www/billetera
@@ -294,7 +394,7 @@ docker compose down
 docker compose --env-file .env up -d --build
 ```
 
-### 4. Crear Usuario Inicial
+#### 4. Crear Usuario Inicial
 
 ```bash
 docker exec -it wallet-web npx tsx scripts/create-user.ts admin admin123
